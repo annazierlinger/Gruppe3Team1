@@ -7,13 +7,21 @@ import java.util.List;
 
 public class MovieRepository {
     Dao<MovieEntity, Long> dao;
+    private static MovieRepository movieRepository_instance = null;
 
-    public MovieRepository() throws DataBaseException {
+    private MovieRepository() throws DataBaseException {
         try {
             this.dao = DatabaseManager.getInstance().getMovieDao();
         } catch (Exception e) {
             throw new DataBaseException(e.getMessage());
         }
+    }
+
+    public static MovieRepository getInstance() throws DataBaseException {
+        if(movieRepository_instance == null){
+            movieRepository_instance = new MovieRepository();
+        }
+        return movieRepository_instance;
     }
 
     public long countRows() throws DataBaseException {
