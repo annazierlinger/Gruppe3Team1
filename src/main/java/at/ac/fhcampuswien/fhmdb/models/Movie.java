@@ -28,6 +28,7 @@ public class Movie {
         this.lengthInMinutes = 0;
         this.rating = 0;
     }
+
     public Movie(String id, String title, String description, List<Genre> genres, int releaseYear, String imgUrl, int lengthInMinutes, double rating) {
         this.id = id;
         this.title = title;
