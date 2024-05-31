@@ -1,21 +1,26 @@
 package at.ac.fhcampuswien.fhmdb.controllers;
 
 import at.ac.fhcampuswien.fhmdb.ClickEventHandler;
+import at.ac.fhcampuswien.fhmdb.api.MovieAPI;
 import at.ac.fhcampuswien.fhmdb.database.*;
+import at.ac.fhcampuswien.fhmdb.models.Movie;
+import at.ac.fhcampuswien.fhmdb.models.Observer;
 import at.ac.fhcampuswien.fhmdb.ui.UserDialog;
 import at.ac.fhcampuswien.fhmdb.ui.WatchlistCell;
 import com.jfoenix.controls.JFXListView;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class WatchlistController implements Initializable {
+public class WatchlistController implements Initializable, Observer {
 
     @FXML
     public JFXListView watchlistView;
@@ -50,7 +55,7 @@ public class WatchlistController implements Initializable {
             MovieRepository movieRepository = MovieRepository.getInstance();
             List<MovieEntity> movies = new ArrayList<>();
 
-            for(WatchlistMovieEntity movie : watchlist) {
+            for (WatchlistMovieEntity movie : watchlist) {
                 movies.add(movieRepository.getMovie(movie.getApiId()));
             }
 
@@ -64,10 +69,40 @@ public class WatchlistController implements Initializable {
             e.printStackTrace();
         }
 
-        if(watchlist.size() == 0) {
+        if (watchlist.size() == 0) {
             watchlistView.setPlaceholder(new javafx.scene.control.Label("Watchlist is empty"));
         }
 
         System.out.println("WatchlistController initialized");
+    }
+
+    @Override
+    public void update() {
+        // Code to react to the changes in the WatchlistRepository
+        // This will be called when a movie is removed from the watchlist
+        try {
+            List<WatchlistMovieEntity> watchlist = watchlistRepository.getWatchlist();
+            List<Movie> movies = new ArrayList<>();
+
+            for (WatchlistMovieEntity movie : watchlist) {
+                movies.remove(MovieAPI.getMovie(movie.getApiId()));
+            }
+
+            observableWatchlist.clear();
+            observableWatchlist.addAll(new MovieEntity().fromMovies(movies));
+
+            // Show a popup window to inform the user that a movie has been added to the watchlist
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Movie Removed");
+                alert.setHeaderText(null);
+                alert.setContentText("A movie has been removed from your watchlist.");
+                //TODO AIDA Main controller instanz
+                alert.showAndWait();
+            });
+        } catch (DataBaseException e) {
+            UserDialog dialog = new UserDialog("Database Error", "Could not read movies from Database");
+            dialog.show();
+        }
     }
 }

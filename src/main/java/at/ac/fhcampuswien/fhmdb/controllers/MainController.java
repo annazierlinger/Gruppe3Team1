@@ -2,6 +2,7 @@ package at.ac.fhcampuswien.fhmdb.controllers;
 
 import at.ac.fhcampuswien.fhmdb.enums.UIComponent;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
+import at.ac.fhcampuswien.fhmdb.models.Observer;
 import com.jfoenix.controls.*;
 import com.jfoenix.transitions.hamburger.HamburgerBasicCloseTransition;
 import javafx.animation.TranslateTransition;
@@ -41,22 +42,22 @@ public class MainController {
         navigateToMovielist();
     }
 
-    private void toggleHamburgerTransitionState(){
+    private void toggleHamburgerTransitionState() {
         transition.setRate(transition.getRate() * -1);
         transition.play();
     }
 
-    private void toggleMenuDrawer(){
+    private void toggleMenuDrawer() {
         toggleHamburgerTransitionState();
 
-        if(isMenuCollapsed) {
-            TranslateTransition translateTransition=new TranslateTransition(Duration.seconds(0.5), drawer);
+        if (isMenuCollapsed) {
+            TranslateTransition translateTransition = new TranslateTransition(Duration.seconds(0.5), drawer);
             translateTransition.setByX(130);
             translateTransition.play();
             isMenuCollapsed = false;
             drawer.toFront();
         } else {
-            TranslateTransition translateTransition=new TranslateTransition(Duration.seconds(0.5), drawer);
+            TranslateTransition translateTransition = new TranslateTransition(Duration.seconds(0.5), drawer);
             translateTransition.setByX(-130);
             translateTransition.play();
             isMenuCollapsed = true;
@@ -64,7 +65,7 @@ public class MainController {
         }
     }
 
-    public void setContent(String fxmlPath){
+    public void setContent(String fxmlPath) {
         FXMLLoader loader = new FXMLLoader(MainController.class.getResource(fxmlPath));
         try {
             mainPane.setCenter(loader.load());
@@ -72,7 +73,7 @@ public class MainController {
             e.printStackTrace();
         }
 
-        if(!isMenuCollapsed){
+        if (!isMenuCollapsed) {
             toggleMenuDrawer();
         }
     }
@@ -120,3 +121,4 @@ public class MainController {
         setContent(UIComponent.MOVIELIST.path);
     }
 }
+

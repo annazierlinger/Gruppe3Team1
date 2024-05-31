@@ -10,11 +10,13 @@ import at.ac.fhcampuswien.fhmdb.ui.UserDialog;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXListView;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 
 import java.net.URL;
@@ -23,7 +25,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class MovieListController implements Initializable {
+public class MovieListController implements Initializable, Observer {
     @FXML
     public JFXButton searchBtn;
 
@@ -49,8 +51,11 @@ public class MovieListController implements Initializable {
 
     protected ObservableList<Movie> observableMovies = FXCollections.observableArrayList();
 
+
     protected State sortedState;
     protected SortingContext context;
+
+    private WatchlistRepository watchlistRepository;
 
     private final ClickEventHandler onAddToWatchlistClicked = (clickedItem) -> {
         if (clickedItem instanceof Movie movie) {
@@ -71,6 +76,13 @@ public class MovieListController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initializeState();
         initializeLayout();
+        try {
+            this.watchlistRepository = WatchlistRepository.getInstance();
+            this.watchlistRepository.addObserver(this);
+        } catch (DataBaseException e) {
+            UserDialog dialog = new UserDialog("Database Error", "Could not read movies from Database");
+            dialog.show();
+        }
     }
 
     public void initializeState() {
@@ -244,6 +256,35 @@ public class MovieListController implements Initializable {
 
     public void sortBtnClicked(ActionEvent actionEvent) {
         sortMovies();
+    }
+
+    @Override
+    public void update() {
+        try {
+            List<WatchlistMovieEntity> watchlist = watchlistRepository.getWatchlist();
+            List<Movie> movies = new ArrayList<>();
+
+            for(WatchlistMovieEntity movie : watchlist) {
+                movies.add(MovieAPI.getMovie(movie.getApiId()));
+            }
+
+            observableMovies.clear();
+            observableMovies.addAll(movies);
+
+            // Show a popup window to inform the user that a movie has been added to the watchlist
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Movie Added");
+                alert.setHeaderText(null);
+                alert.setContentText("A movie has been added to your watchlist.");
+                //TODO AIDA main controller instanz
+                alert.showAndWait();
+            });
+        } catch (DataBaseException e) {
+            UserDialog dialog = new UserDialog("Database Error", "Could not read movies from Database");
+            dialog.show();
+
+        }
     }
 
     /* public void sortMovies(){
