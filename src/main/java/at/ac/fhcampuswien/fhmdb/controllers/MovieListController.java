@@ -57,6 +57,15 @@ public class MovieListController implements Initializable, Observer {
 
     private WatchlistRepository watchlistRepository;
 
+    public MovieListController() {
+        try {
+            this.watchlistRepository = WatchlistRepository.getInstance();
+            this.watchlistRepository.addObserver(this);
+        } catch (DataBaseException e){
+            UserDialog dialog = new UserDialog("Database Error", "Could not read movies from Database");
+            dialog.show();}
+    }
+
     private final ClickEventHandler onAddToWatchlistClicked = (clickedItem) -> {
         if (clickedItem instanceof Movie movie) {
             WatchlistMovieEntity watchlistMovieEntity = new WatchlistMovieEntity(
@@ -76,13 +85,13 @@ public class MovieListController implements Initializable, Observer {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initializeState();
         initializeLayout();
-        try {
+        /*try {
             this.watchlistRepository = WatchlistRepository.getInstance();
             this.watchlistRepository.addObserver(this);
         } catch (DataBaseException e) {
             UserDialog dialog = new UserDialog("Database Error", "Could not read movies from Database");
             dialog.show();
-        }
+        }*/
     }
 
     public void initializeState() {
@@ -260,6 +269,8 @@ public class MovieListController implements Initializable, Observer {
 
     @Override
     public void update() {
+        // Code to react to the changes in the WatchlistRepository
+        // This will be called when a movie is added to the watchlist
         try {
             List<WatchlistMovieEntity> watchlist = watchlistRepository.getWatchlist();
             List<Movie> movies = new ArrayList<>();
@@ -277,13 +288,11 @@ public class MovieListController implements Initializable, Observer {
                 alert.setTitle("Movie Added");
                 alert.setHeaderText(null);
                 alert.setContentText("A movie has been added to your watchlist.");
-                //TODO AIDA main controller instanz
                 alert.showAndWait();
             });
         } catch (DataBaseException e) {
-            UserDialog dialog = new UserDialog("Database Error", "Could not read movies from Database");
+            UserDialog dialog = new UserDialog("Database Error", "Could not read movies from database");
             dialog.show();
-
         }
     }
 
