@@ -51,8 +51,6 @@ public class MovieListController implements Initializable, Observer {
 
     protected ObservableList<Movie> observableMovies = FXCollections.observableArrayList();
 
-
-    protected State sortedState;
     protected SortingContext context;
 
     private WatchlistRepository watchlistRepository;
@@ -106,8 +104,6 @@ public class MovieListController implements Initializable, Observer {
     //TODO: andere Lösung? zunächst: sortedState=new NoneState(context); dann context = new SortingContext(sortedState); aber geht nicht
     private void initializeSortingContext() {
         context = new SortingContext();
-        State noneState = new NoneState(context);
-        context.changeState(noneState);
     }
 
     private List<Movie> readCache() {
@@ -229,9 +225,11 @@ public class MovieListController implements Initializable, Observer {
         }
 
         List<Movie> movies = getMovies(searchQuery, genre, releaseYear, ratingFrom);
-
+        context.sorting(movies);
         setMovies(movies);
         setMovieList(movies);
+
+
         // applyAllFilters(searchQuery, genre);
        /* if(sortedState != SortedState.NONE) {
             sortMovies(sortedState);
@@ -257,6 +255,7 @@ public class MovieListController implements Initializable, Observer {
     }
 
     public void sortBtnClicked(ActionEvent actionEvent) {
+        context.sortButtonClicked();
         sortMovies();
     }
 

@@ -9,6 +9,7 @@ public class SortingContext {
     }
 
     public SortingContext() {
+        this.state = new NoneState(this);
     }
 
     public void sorting(List movieList){
@@ -21,5 +22,9 @@ public class SortingContext {
 
     private void setState(State state) {
         this.state = state;
+    }
+
+    public void sortButtonClicked(){
+        state.sortButtonClicked();
     }
 }

@@ -13,7 +13,10 @@ public class DescendingState implements State{
 
     @Override
     public void sortMovies(List<Movie> movieList) {
-        movieList.sort(Comparator.comparing(Movie::getTitle));
+        movieList.sort(Comparator.comparing(Movie::getTitle).reversed());
+    }
+    @Override
+    public void sortButtonClicked() {
         context.changeState(new AscendingState(context));
     }
 }

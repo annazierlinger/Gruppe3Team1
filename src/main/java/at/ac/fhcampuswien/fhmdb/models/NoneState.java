@@ -13,7 +13,10 @@ public class NoneState implements State{
 
     @Override
     public void sortMovies(List<Movie> movieList) {
-        movieList.sort(Comparator.comparing(Movie::getTitle));
+    }
+
+    @Override
+    public void sortButtonClicked() {
         context.changeState(new AscendingState(context));
     }
 }
