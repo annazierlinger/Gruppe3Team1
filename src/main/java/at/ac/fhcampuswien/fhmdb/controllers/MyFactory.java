@@ -3,9 +3,9 @@ package at.ac.fhcampuswien.fhmdb.controllers;
 import javafx.util.Callback;
 
 public class MyFactory implements Callback<Class<?>, Object> {
-    private MovieListController movieListController;
-    private MainController mainController;
-    private WatchlistController watchlistController;
+    private static MovieListController movieListController;
+    private static MainController mainController;
+    private static WatchlistController watchlistController;
 
     @Override
     public Object call(Class<?> type) {
