@@ -67,6 +67,7 @@ public class MainController {
 
     public void setContent(String fxmlPath) {
         FXMLLoader loader = new FXMLLoader(MainController.class.getResource(fxmlPath));
+        loader.setControllerFactory(new MyFactory());
         try {
             mainPane.setCenter(loader.load());
         } catch (Exception e) {

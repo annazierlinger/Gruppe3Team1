@@ -51,11 +51,18 @@ public class MovieListController implements Initializable, Observer {
 
     protected ObservableList<Movie> observableMovies = FXCollections.observableArrayList();
 
-
-    protected State sortedState;
     protected SortingContext context;
 
     private WatchlistRepository watchlistRepository;
+
+    public MovieListController() {
+        try {
+            this.watchlistRepository = WatchlistRepository.getInstance();
+            this.watchlistRepository.addObserver(this);
+        } catch (DataBaseException e){
+            UserDialog dialog = new UserDialog("Database Error", "Could not read movies from Database");
+            dialog.show();}
+    }
 
     private final ClickEventHandler onAddToWatchlistClicked = (clickedItem) -> {
         if (clickedItem instanceof Movie movie) {
@@ -76,13 +83,6 @@ public class MovieListController implements Initializable, Observer {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initializeState();
         initializeLayout();
-        try {
-            this.watchlistRepository = WatchlistRepository.getInstance();
-            this.watchlistRepository.addObserver(this);
-        } catch (DataBaseException e) {
-            UserDialog dialog = new UserDialog("Database Error", "Could not read movies from Database");
-            dialog.show();
-        }
     }
 
     public void initializeState() {
@@ -104,8 +104,6 @@ public class MovieListController implements Initializable, Observer {
     //TODO: andere Lösung? zunächst: sortedState=new NoneState(context); dann context = new SortingContext(sortedState); aber geht nicht
     private void initializeSortingContext() {
         context = new SortingContext();
-        State noneState = new NoneState(context);
-        context.changeState(noneState);
     }
 
     private List<Movie> readCache() {
@@ -227,9 +225,11 @@ public class MovieListController implements Initializable, Observer {
         }
 
         List<Movie> movies = getMovies(searchQuery, genre, releaseYear, ratingFrom);
-
+        context.sorting(movies);
         setMovies(movies);
         setMovieList(movies);
+
+
         // applyAllFilters(searchQuery, genre);
        /* if(sortedState != SortedState.NONE) {
             sortMovies(sortedState);
@@ -255,36 +255,40 @@ public class MovieListController implements Initializable, Observer {
     }
 
     public void sortBtnClicked(ActionEvent actionEvent) {
+        context.sortButtonClicked();
         sortMovies();
     }
 
     @Override
     public void update() {
-        try {
-            List<WatchlistMovieEntity> watchlist = watchlistRepository.getWatchlist();
-            List<Movie> movies = new ArrayList<>();
+        // Code to react to the changes in the WatchlistRepository
+        // This will be called when a movie is added to the watchlist
+            try {
+                List<WatchlistMovieEntity> watchlist = watchlistRepository.getWatchlist();
+                List<Movie> movies = new ArrayList<>();
 
-            for(WatchlistMovieEntity movie : watchlist) {
-                movies.add(MovieAPI.getMovie(movie.getApiId()));
+                for (WatchlistMovieEntity movie : watchlist) {
+                    movies.add(MovieAPI.getMovie(movie.getApiId()));
+                }
+
+                observableMovies.addAll(movies);
+                //TODO AIDA
+                // Show a popup window to inform the user that a movie has been added to the watchlist
+                Platform.runLater(() -> {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Movie Added");
+                    alert.setHeaderText(null);
+                    if (movies.size() > 0 && watchlist.stream().anyMatch(movie -> movie.getApiId().equals(watchlist.get(watchlist.size() - 1).getApiId()))) {
+                        alert.setContentText("The movie is already in your watchlist.");
+                    } else {
+                        alert.setContentText("This movie has been added to your watchlist.");
+                    }
+                    alert.showAndWait();
+                });
+            } catch (DataBaseException e) {
+                UserDialog dialog = new UserDialog("Database Error", "Could not read movies from database");
+                dialog.show();
             }
-
-            observableMovies.clear();
-            observableMovies.addAll(movies);
-
-            // Show a popup window to inform the user that a movie has been added to the watchlist
-            Platform.runLater(() -> {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Movie Added");
-                alert.setHeaderText(null);
-                alert.setContentText("A movie has been added to your watchlist.");
-                //TODO AIDA main controller instanz
-                alert.showAndWait();
-            });
-        } catch (DataBaseException e) {
-            UserDialog dialog = new UserDialog("Database Error", "Could not read movies from Database");
-            dialog.show();
-
-        }
     }
 
     /* public void sortMovies(){
