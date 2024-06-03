@@ -41,8 +41,8 @@ public class WatchlistRepository implements Observable {
             // only add movie if it does not exist yet
             long count = dao.queryBuilder().where().eq("apiId", movie.getApiId()).countOf();
             if (count == 0) {
-                notifyObservers(); //Notify observers when a movie is added to watchlist
-                return dao.create(movie);
+                dao.create(movie);
+                return 1;
             } else {
                 return 0;
             }
@@ -54,7 +54,8 @@ public class WatchlistRepository implements Observable {
 
     public int removeFromWatchlist(String apiId) throws DataBaseException {
         try {
-            return dao.delete(dao.queryBuilder().where().eq("apiId", apiId).query());
+            dao.delete(dao.queryBuilder().where().eq("apiId", apiId).query());
+            return 1;
         } catch (Exception e) {
             throw new DataBaseException("Error while removing from watchlist");
         }
@@ -71,8 +72,8 @@ public class WatchlistRepository implements Observable {
     }
 
     @Override
-    public void notifyObservers() {
-        for (Observer observer : observers) {
+    public void notifyObservers(List<Observer> observers) {
+        for (Observer observer : this.observers) {
             observer.update();
         }
     }

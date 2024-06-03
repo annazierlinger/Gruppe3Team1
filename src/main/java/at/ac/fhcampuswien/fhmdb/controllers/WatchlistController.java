@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class WatchlistController implements Initializable {
+public class WatchlistController implements Initializable, Observer {
 
     @FXML
     public JFXListView watchlistView;
@@ -28,6 +28,15 @@ public class WatchlistController implements Initializable {
     private WatchlistRepository watchlistRepository;
 
     protected ObservableList<MovieEntity> observableWatchlist = FXCollections.observableArrayList();
+
+    public WatchlistController() {
+        try {
+            this.watchlistRepository = WatchlistRepository.getInstance();
+            this.watchlistRepository.removeObserver(this);
+        } catch (DataBaseException e){
+            UserDialog dialog = new UserDialog("Database Error", "Could not read movies from Database");
+            dialog.show();}
+    }
 
     private final ClickEventHandler onRemoveFromWatchlistClicked = (o) -> {
         if (o instanceof MovieEntity) {
@@ -37,6 +46,7 @@ public class WatchlistController implements Initializable {
                 WatchlistRepository watchlistRepository = WatchlistRepository.getInstance();
                 watchlistRepository.removeFromWatchlist(movieEntity.getApiId());
                 observableWatchlist.remove(movieEntity);
+                this.update();
             } catch (DataBaseException e) {
                 UserDialog dialog = new UserDialog("Database Error", "Could not remove movie from watchlist");
                 dialog.show();
@@ -74,5 +84,11 @@ public class WatchlistController implements Initializable {
         }
 
         System.out.println("WatchlistController initialized");
+    }
+
+    @Override
+    public void update() {
+        UserDialog dialog = new UserDialog("Movie removed!", "Movie has been removed from watchlist!");
+        dialog.show();
     }
 }

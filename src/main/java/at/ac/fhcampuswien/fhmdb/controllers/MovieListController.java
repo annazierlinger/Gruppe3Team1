@@ -71,6 +71,7 @@ public class MovieListController implements Initializable, Observer {
             try {
                 WatchlistRepository repository = WatchlistRepository.getInstance();
                 repository.addToWatchlist(watchlistMovieEntity);
+                this.update();
             } catch (DataBaseException s) {
                 UserDialog dialog = new UserDialog("Database Error", "Could not add movie to watchlist");
                 dialog.show();
@@ -261,15 +262,21 @@ public class MovieListController implements Initializable, Observer {
 
     @Override
     public void update() {
+        UserDialog dialog = new UserDialog("Movie added!", "Movie has been added to watchlist!");
+        dialog.show();
+    }
+
+    /*@Override
+    public void update() {
         // Code to react to the changes in the WatchlistRepository
         // This will be called when a movie is added to the watchlist
-            try {
-                List<WatchlistMovieEntity> watchlist = watchlistRepository.getWatchlist();
-                List<Movie> movies = new ArrayList<>();
+        try {
+            List<WatchlistMovieEntity> watchlist = watchlistRepository.getWatchlist();
+            List<Movie> movies = new ArrayList<>();
 
-                for (WatchlistMovieEntity movie : watchlist) {
+            for (WatchlistMovieEntity movie : watchlist) {
                     movies.add(MovieAPI.getMovie(movie.getApiId()));
-                }
+            }
 
                 observableMovies.addAll(movies);
                 //TODO AIDA
@@ -289,7 +296,7 @@ public class MovieListController implements Initializable, Observer {
                 UserDialog dialog = new UserDialog("Database Error", "Could not read movies from database");
                 dialog.show();
             }
-    }
+    }*/
 
     /* public void sortMovies(){
         if (sortedState == SortedState.NONE || sortedState == SortedState.DESCENDING) {
